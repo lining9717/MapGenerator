@@ -1,0 +1,17 @@
+[
+{
+  "directory": "D:/Workspace/qt_ws/MapGenerator/build",
+  "command": "\"D:\\Program Files\\Qt\\Qt5.12.9\\Tools\\mingw730_64\\bin\\x86_64-w64-mingw32-g++.exe\" -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB @CMakeFiles/MapGenerator.dir/includes_CXX.rsp -g -std=gnu++11 -o CMakeFiles\\MapGenerator.dir\\MapGenerator_autogen\\mocs_compilation.cpp.obj -c D:\\Workspace\\qt_ws\\MapGenerator\\build\\MapGenerator_autogen\\mocs_compilation.cpp",
+  "file": "D:/Workspace/qt_ws/MapGenerator/build/MapGenerator_autogen/mocs_compilation.cpp"
+},
+{
+  "directory": "D:/Workspace/qt_ws/MapGenerator/build",
+  "command": "\"D:\\Program Files\\Qt\\Qt5.12.9\\Tools\\mingw730_64\\bin\\x86_64-w64-mingw32-g++.exe\" -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB @CMakeFiles/MapGenerator.dir/includes_CXX.rsp -g -std=gnu++11 -o CMakeFiles\\MapGenerator.dir\\main.cpp.obj -c D:\\Workspace\\qt_ws\\MapGenerator\\main.cpp",
+  "file": "D:/Workspace/qt_ws/MapGenerator/main.cpp"
+},
+{
+  "directory": "D:/Workspace/qt_ws/MapGenerator/build",
+  "command": "\"D:\\Program Files\\Qt\\Qt5.12.9\\Tools\\mingw730_64\\bin\\x86_64-w64-mingw32-g++.exe\" -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB @CMakeFiles/MapGenerator.dir/includes_CXX.rsp -g -std=gnu++11 -o CMakeFiles\\MapGenerator.dir\\mainwindow.cpp.obj -c D:\\Workspace\\qt_ws\\MapGenerator\\mainwindow.cpp",
+  "file": "D:/Workspace/qt_ws/MapGenerator/mainwindow.cpp"
+}
+]

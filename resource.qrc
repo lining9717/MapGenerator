@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/new/image">
+        <file>img/add.png</file>
+        <file>img/delete.png</file>
+        <file>img/launch.png</file>
+        <file>img/logo.png</file>
+        <file>img/logo2.png</file>
+        <file>img/delete_item.png</file>
+        <file>img/run.png</file>
+    </qresource>
+</RCC>

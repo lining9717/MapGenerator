@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\MapGenerator.dir/objects.a
+"D:\Program Files\Qt\Qt5.12.9\Tools\mingw730_64\bin\ar.exe" qc CMakeFiles\MapGenerator.dir/objects.a @CMakeFiles\MapGenerator.dir\objects1.rsp
+"D:\Program Files\Qt\Qt5.12.9\Tools\mingw730_64\bin\x86_64-w64-mingw32-g++.exe" -g -Wl,--whole-archive CMakeFiles\MapGenerator.dir/objects.a -Wl,--no-whole-archive -o MapGenerator.exe -Wl,--out-implib,libMapGenerator.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\MapGenerator.dir\linklibs.rsp
