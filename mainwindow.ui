@@ -170,16 +170,9 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QPushButton" name="draw_pushButton">
+              <widget class="QPushButton" name="generate_grid_bt">
                <property name="text">
-                <string>绘制地图</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="erase_pushButton">
-               <property name="text">
-                <string>擦除</string>
+                <string>生成网格地图</string>
                </property>
               </widget>
              </item>
@@ -290,7 +283,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>201</width>
+            <width>194</width>
             <height>533</height>
            </rect>
           </property>
@@ -362,6 +355,7 @@
     <addaction name="edit_draw_action"/>
     <addaction name="actions"/>
     <addaction name="actionsa"/>
+    <addaction name="actionquan"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -439,6 +433,11 @@
   <action name="actiona_3">
    <property name="text">
     <string>构造World文件</string>
+   </property>
+  </action>
+  <action name="actionquan">
+   <property name="text">
+    <string>全部擦除</string>
    </property>
   </action>
  </widget>

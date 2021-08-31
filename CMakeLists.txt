@@ -24,6 +24,8 @@ set(SOURCES
     mainwindow.h
     configure.h
     gridscene.h
+    worldfilegenerator.h
+    worldfilegenerator.cpp
     gridscene.cpp
     mainwindow.ui
     simulationlauncher.ui

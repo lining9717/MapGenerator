@@ -23,21 +23,19 @@ MainWindow::MainWindow(WINDOWS_TYPES type, QWidget *parent)
     ui->add_toolButton->setStyleSheet("border:none");
     ui->delete_all_toolButton->setIcon(QIcon(":/new/image/img/delete.png"));
     ui->delete_all_toolButton->setStyleSheet("border:none");
-    //初始化画板状态
-    grid_scene->setGridStatus(IDLE);
     //初始化状态
-    if(type == LOADWORLD) {
+    if(type == LOADWORLD)
+    {
         ui->width_spinBox->setEnabled(false);
         ui->height_spinBox->setEnabled(false);
-        ui->draw_pushButton->setEnabled(false);
-        ui->erase_pushButton->setEnabled(false);
         setStatusText("加载世界就绪");
-    } else {
+    }
+    else
+    {
         setStatusText("创建世界就绪");
     }
     //信号槽绑定
     connect(ui->edit_draw_action, &QAction::triggered, this, &MainWindow::switchDrawing);
-    connect(ui->draw_pushButton, &QPushButton::clicked, this, &MainWindow::switchDrawing);
 }
 
 MainWindow::~MainWindow()
@@ -60,32 +58,89 @@ void MainWindow::setMapFile(const QString &map_file_path)
 
 void MainWindow::createGrid(int num_of_row, int num_of_col)
 {
-    delete grid_scene;
     QGraphicsView *grid_view = ui->grid_view;
     int width = cell_size * num_of_row;
     int height = cell_size * num_of_col;
-    grid_scene = new GridScene(width, height);
+    GridScene* new_grid_scene = new GridScene(width, height);
     grid_view->resize(width, height);
-    grid_view->setScene(grid_scene);
+    grid_view->setScene(new_grid_scene);
     grid_view->setSceneRect(0, 0, width, height);
-    grid_view->scene()->addRect(0, 0, cell_size, cell_size)->setBrush(QBrush(Qt::black));
-    grid_view->show();
+    grid_view->update();
+//    grid_view->show();
+    delete grid_scene;
+    grid_scene = new_grid_scene;
+    //初始化画板状态
+    grid_scene->setGridStatus(IDLE);
 }
 
 void MainWindow::switchDrawing()
 {
-    if(grid_scene == nullptr) {
+    if(grid_scene == nullptr)
+    {
         return;
     }
-    if(grid_scene->getGridStarus() != DRAWING) {
+    if(grid_scene->getGridStarus() != DRAWING)
+    {
         grid_scene->setGridStatus(DRAWING);
         ui->edit_draw_action->setText("停止绘制");
-        ui->draw_pushButton->setText("停止绘制");
         setStatusText("绘制地图中...");
-    } else {
+    }
+    else
+    {
         grid_scene->setGridStatus(IDLE);
         ui->edit_draw_action->setText("开始绘制");
-        ui->draw_pushButton->setText("开始绘制");
         setStatusText("停止绘制");
     }
+}
+
+void MainWindow::on_generate_grid_bt_clicked()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::information(this, "生成新网格地图", "确定之后将会清除已绘制的地图",
+                                     QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    if(reply == QMessageBox::Yes)
+    {
+        int width_num = ui->width_spinBox->value();
+        int height_num = ui->height_spinBox->value();
+        createGrid(width_num, height_num);
+    }
+}
+
+void MainWindow::on_start_toolButton_clicked()
+{
+    QVector<QVector<QPointF>> walls = grid_scene->getWalls();
+    int height = grid_scene->getGridHeightNumber();
+    int width = grid_scene->getGridWidthNumber();
+    QVector<QString> map(height+2, QString(width+2,'.'));
+    for(int i=0; i<walls.size(); ++i)
+    {
+        for(int j=0; j<walls[i].size(); ++j)
+        {
+            map[int(walls[i][j].ry())+1][int(walls[i][j].rx())+1] = '#';
+        }
+    }
+
+    QString filename = QFileDialog::getSaveFileName(
+                           this,
+                           tr("select file to save"),
+                           "/home/ln/map_world/map.txt",
+                           tr("text files(*.txt)"));
+    QFile f(filename);
+    if(f.open(QIODevice::WriteOnly|QIODevice::Text))
+    {
+        QTextStream out(&f);
+        for(QString &line:map)
+        {
+            out << line << endl;
+        }
+    }
+    else
+    {
+        qWarning("Could not open file");
+    }
+    WorldFileGenerator mg;
+    mg.setMapFile(filename.toStdString());
+    QStringList list = filename.split('.');
+    list[0]+=".world";
+    mg.generateWorldFile(list[0].toStdString());
 }

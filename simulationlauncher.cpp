@@ -45,7 +45,7 @@ void SimulationLauncher::on_load_map_bt_clicked()
     QString fileName = QFileDialog::getOpenFileName(
                            this,
                            tr("打开地图文件"),
-                           "D:/",
+                           "~/",
                            tr("text files(*.txt)"));
     if(fileName.isEmpty()) {
         return;

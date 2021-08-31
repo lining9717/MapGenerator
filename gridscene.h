@@ -1,38 +1,43 @@
 #ifndef GRIDGRIDSCENE_H
 #define GRIDGRIDSCENE_H
 
+#include "configure.h"
+#include <QDebug>
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
-#include <QDebug>
-#include "configure.h"
 
-class GridScene: public QGraphicsScene
+class GridScene : public QGraphicsScene
 {
 private:
     int m_cell_size = 25;
     int m_width;
     int m_height;
+    int m_grid_width_num;  // grid width number
+    int m_grid_height_num; // grid height number
     GRID_STATUS status;
     QPointF start_point;
-    QList<QGraphicsRectItem*> rects_to_draw_list;
-    QVector<QPointF> walls;
-
+    QList<QPointF> rects_to_draw_list;
+    QList<QList<QPointF>> rects_record;
+    QVector<QPointF> current_walls;
+    QVector<QVector<QPointF>> walls_record;
 
 protected:
-    void drawBackground(QPainter *painter, const QRectF &rect) override;
+    void drawBackground(QPainter *painter, const QRectF &rect)override;
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) override;
+    void getWalls(const QPointF &start, const QPointF &end);
 
 public:
     GridScene(int width, int height);
     ~GridScene();
     GRID_STATUS getGridStarus();
     void setGridStatus(GRID_STATUS s);
-
+    QVector<QVector<QPointF>> getWalls() const;
+    int getGridWidthNumber() const;
+    int getGridHeightNumber() const;
 };
-
 
 #endif // GRIDGRIDSCENE_H
