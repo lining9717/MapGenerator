@@ -42,7 +42,6 @@ private:
     GridScene* grid_scene;
     QString map_file;
     QLabel* status_bar_label;
-    int cell_size = 25;
     void setStatusText(const QString& text);
 };
 

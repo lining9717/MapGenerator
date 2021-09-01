@@ -71,6 +71,16 @@ void MainWindow::createGrid(int num_of_row, int num_of_col)
     grid_scene = new_grid_scene;
     //初始化画板状态
     grid_scene->setGridStatus(IDLE);
+
+    // 无人机位置，暂时使用
+    int x_bias = num_of_row/2;
+    int y_bias = num_of_col/2;
+    QVector<QVector<int>> offset{{0,0},{1,0},{1,-1},{0,-1}};
+    for(auto &p:offset)
+    {
+        grid_scene->addRect((x_bias+p[0]) * cell_size, (y_bias-p[1]) * cell_size,
+                            cell_size, cell_size)->setBrush(QBrush(Qt::blue));
+    }
 }
 
 void MainWindow::switchDrawing()
@@ -108,6 +118,7 @@ void MainWindow::on_generate_grid_bt_clicked()
 
 void MainWindow::on_start_toolButton_clicked()
 {
+    setStatusText("生成地图文件...");
     QVector<QVector<QPointF>> walls = grid_scene->getWalls();
     int height = grid_scene->getGridHeightNumber();
     int width = grid_scene->getGridWidthNumber();
@@ -122,7 +133,7 @@ void MainWindow::on_start_toolButton_clicked()
 
     QString filename = QFileDialog::getSaveFileName(
                            this,
-                           tr("select file to save"),
+                           tr("选择保存目录文件"),
                            "/home/ln/map_world/map.txt",
                            tr("text files(*.txt)"));
     QFile f(filename);
@@ -136,11 +147,13 @@ void MainWindow::on_start_toolButton_clicked()
     }
     else
     {
-        qWarning("Could not open file");
+        qWarning("打开文件失败");
     }
+    setStatusText("生成world文件...");
     WorldFileGenerator mg;
     mg.setMapFile(filename.toStdString());
     QStringList list = filename.split('.');
     list[0]+=".world";
     mg.generateWorldFile(list[0].toStdString());
+    setStatusText("生成world文件成功："+list[0]);
 }

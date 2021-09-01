@@ -8,10 +8,11 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 
+const int cell_size = 20;
+
 class GridScene : public QGraphicsScene
 {
 private:
-    int m_cell_size = 25;
     int m_width;
     int m_height;
     int m_grid_width_num;  // grid width number

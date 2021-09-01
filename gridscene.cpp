@@ -6,8 +6,8 @@ GridScene::GridScene(int width, int height)
     , status(IDLE)
     , start_point(-1, -1)
 {
-    m_grid_width_num = static_cast<int>(width / m_cell_size);
-    m_grid_height_num = static_cast<int>(height / m_cell_size);
+    m_grid_width_num = static_cast<int>(width / cell_size);
+    m_grid_height_num = static_cast<int>(height / cell_size);
 }
 
 GridScene::~GridScene() {}
@@ -15,11 +15,11 @@ GridScene::~GridScene() {}
 void GridScene::drawBackground(QPainter* painter, const QRectF& rect)
 {
     QVarLengthArray<QLineF, 100> lines;
-    for (qreal x = 0; x <= m_width; x += m_cell_size)
+    for (qreal x = 0; x <= m_width; x += cell_size)
     {
         lines.append(QLineF(x, 0, x, m_height));
     }
-    for (qreal y = 0; y <= m_height; y += m_cell_size)
+    for (qreal y = 0; y <= m_height; y += cell_size)
     {
         lines.append(QLineF(0, y, m_width, y));
     }
@@ -226,8 +226,8 @@ void GridScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
         return;
     }
     QPointF coordinate_position(
-        static_cast<int>(real_position.rx() / m_cell_size),
-        static_cast<int>(real_position.ry() / m_cell_size));
+        static_cast<int>(real_position.rx() / cell_size),
+        static_cast<int>(real_position.ry() / cell_size));
 //    qDebug() << "mouse Press position: (" << coordinate_position.rx() << ","
 //             << coordinate_position.ry() << ")";
     current_walls.push_back(coordinate_position);
@@ -257,8 +257,8 @@ void GridScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
             real_position.setY(m_height - 1);
         }
         QPointF coordinate_position(
-            static_cast<int>(real_position.rx() / m_cell_size),
-            static_cast<int>(real_position.ry() / m_cell_size));
+            static_cast<int>(real_position.rx() / cell_size),
+            static_cast<int>(real_position.ry() / cell_size));
         if (coordinate_position.rx() == start_point.rx() and coordinate_position.ry() == start_point.ry())
         {
             QGraphicsScene::mouseMoveEvent(mouseEvent);
@@ -283,12 +283,12 @@ void GridScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
             for (const auto& p : current_walls)
             {
                 QGraphicsRectItem* rect = new QGraphicsRectItem();
-                rect->setRect(p.x() * m_cell_size, p.y() * m_cell_size, m_cell_size,
-                              m_cell_size);
+                rect->setRect(p.x() * cell_size, p.y() * cell_size, cell_size,
+                              cell_size);
                 rect->setBrush(QBrush(Qt::black));
                 addItem(rect);
                 rects_to_draw_list.push_back(
-                { p.x() * m_cell_size + 1, p.y() * m_cell_size + 1 });
+                { p.x() * cell_size + 1, p.y() * cell_size + 1 });
             }
         }
     }
@@ -302,20 +302,20 @@ void GridScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     QPointF real_position = mouseEvent->scenePos();
     QPointF coordinate_position(
-        static_cast<int>(real_position.rx() / m_cell_size),
-        static_cast<int>(real_position.ry() / m_cell_size));
+        static_cast<int>(real_position.rx() / cell_size),
+        static_cast<int>(real_position.ry() / cell_size));
 //    qDebug() << "mouse Release position: (" << coordinate_position.rx() << ","
 //             << coordinate_position.ry() << ")";
     if (coordinate_position.rx() == start_point.rx() and coordinate_position.ry() == start_point.ry())
     {
         QGraphicsRectItem* rect = new QGraphicsRectItem();
-        rect->setRect(coordinate_position.x() * m_cell_size,
-                      coordinate_position.y() * m_cell_size, m_cell_size,
-                      m_cell_size);
+        rect->setRect(coordinate_position.x() * cell_size,
+                      coordinate_position.y() * cell_size, cell_size,
+                      cell_size);
         rect->setBrush(QBrush(Qt::black));
         addItem(rect);
-        rects_to_draw_list.push_back({ coordinate_position.x() * m_cell_size + 1,
-                                       coordinate_position.y() * m_cell_size + 1 });
+        rects_to_draw_list.push_back({ coordinate_position.x() * cell_size + 1,
+                                       coordinate_position.y() * cell_size + 1 });
         current_walls.push_back(coordinate_position);
     }
     if (!current_walls.empty())

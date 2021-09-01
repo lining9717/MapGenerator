@@ -43,7 +43,6 @@ void WorldFileGenerator::generateWorldFile(const string &to_file)
     }
     fileout << world_text;
     fileout.close();
-    cout << "generate world file success: " << to_file << endl;
 }
 
 string WorldFileGenerator::add_walls1()
@@ -122,7 +121,6 @@ void WorldFileGenerator::parse_walls()
     height = map.size();
     int x_bias = width / 2;
     int y_bias = height / 2;
-
     for (int i = 0; i < height; ++i)
     {
         vector<int> item;
