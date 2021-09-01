@@ -20,7 +20,6 @@ private:
     GRID_STATUS status;
     QPointF start_point;
     QList<QPointF> rects_to_draw_list;
-    QList<QList<QPointF>> rects_record;
     QVector<QPointF> current_walls;
     QVector<QVector<QPointF>> walls_record;
 

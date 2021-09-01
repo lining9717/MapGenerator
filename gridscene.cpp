@@ -213,26 +213,55 @@ void GridScene::getWalls(const QPointF& start, const QPointF& end)
 
 void GridScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-    if (mouseEvent->button() != Qt::LeftButton)
-    {
-        return;
-    }
     rects_to_draw_list.clear();
     current_walls.clear();
-    QPointF real_position = mouseEvent->scenePos();
-    if (real_position.rx() < 0 or real_position.rx() >= m_width or real_position.ry() < 0 or real_position.ry() >= m_height)
+    if (mouseEvent->button() == Qt::LeftButton)
     {
+        QPointF real_position = mouseEvent->scenePos();
+        if (real_position.rx() < 0 or real_position.rx() >= m_width or real_position.ry() < 0 or real_position.ry() >= m_height)
+        {
+            QGraphicsScene::mousePressEvent(mouseEvent);
+            return;
+        }
+        QPointF coordinate_position(
+            static_cast<int>(real_position.rx() / cell_size),
+            static_cast<int>(real_position.ry() / cell_size));
+        current_walls.push_back(coordinate_position);
+        start_point = { coordinate_position.rx(), coordinate_position.ry() };
         QGraphicsScene::mousePressEvent(mouseEvent);
-        return;
     }
-    QPointF coordinate_position(
-        static_cast<int>(real_position.rx() / cell_size),
-        static_cast<int>(real_position.ry() / cell_size));
-//    qDebug() << "mouse Press position: (" << coordinate_position.rx() << ","
-//             << coordinate_position.ry() << ")";
-    current_walls.push_back(coordinate_position);
-    start_point = { coordinate_position.rx(), coordinate_position.ry() };
-    QGraphicsScene::mousePressEvent(mouseEvent);
+    else if(mouseEvent->button() == Qt::RightButton)
+    {
+        QPointF real_position = mouseEvent->scenePos();
+        if (real_position.rx() < 0 or real_position.rx() >= m_width or real_position.ry() < 0 or real_position.ry() >= m_height)
+        {
+            QGraphicsScene::mousePressEvent(mouseEvent);
+            return;
+        }
+        QPointF coordinate_position(
+            static_cast<int>(real_position.rx() / cell_size),
+            static_cast<int>(real_position.ry() / cell_size));
+        QGraphicsRectItem* curr_rect = qgraphicsitem_cast<QGraphicsRectItem*>(
+                                           itemAt(real_position, QTransform()));
+        removeItem(curr_rect);
+        delete curr_rect;
+        QVector<QVector<int>> delete_index;
+        for(int i=0; i<walls_record.size(); ++i)
+        {
+            for(int j=0; j<walls_record[i].size(); ++j)
+            {
+                if(walls_record[i][j]==coordinate_position)
+                {
+                    delete_index.push_back({i,j});
+                }
+            }
+        }
+        for(auto &ind:delete_index)
+        {
+            walls_record[ind[0]].erase(walls_record[ind[0]].begin()+ind[1]);
+        }
+    }
+
 }
 
 void GridScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
@@ -321,10 +350,6 @@ void GridScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
     if (!current_walls.empty())
     {
         walls_record.push_back(current_walls);
-    }
-    if (!rects_to_draw_list.empty())
-    {
-        rects_record.push_back(rects_to_draw_list);
     }
     start_point.setX(-1);
     start_point.setY(-1);
