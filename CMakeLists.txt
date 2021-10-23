@@ -30,7 +30,10 @@ set(SOURCES
     mainwindow.ui
     simulationlauncher.ui
     simulationlauncher.h
-    simulationlauncher.cpp)
+    simulationlauncher.cpp
+    uavitem.ui
+    uavitem.h
+    uavitem.cpp)
 
 qt5_add_resources(SOURCES resource.qrc)
 

@@ -42,18 +42,18 @@ void SimulationLauncher::on_about_bt_clicked()
 
 void SimulationLauncher::on_load_map_bt_clicked()
 {
+
     QString fileName = QFileDialog::getOpenFileName(
                            this,
                            tr("打开地图文件"),
-                           "~/",
+                           "/home/ln/maps/",
                            tr("text files(*.txt)"));
     if(fileName.isEmpty()) {
         return;
     } else {
         this->hide();
         qDebug() << fileName;
-        main_window = new MainWindow(LOADWORLD);
-        main_window->setMapFile(fileName);
+        main_window = new MainWindow(fileName);
         main_window->show();
     }
 }
@@ -61,6 +61,6 @@ void SimulationLauncher::on_load_map_bt_clicked()
 void SimulationLauncher::on_create_map_bt_clicked()
 {
     this->hide();
-    main_window = new MainWindow(CREATWORLD);
+    main_window = new MainWindow();
     main_window->show();
 }

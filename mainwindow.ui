@@ -172,7 +172,7 @@
              <item>
               <widget class="QPushButton" name="generate_grid_bt">
                <property name="text">
-                <string>生成网格地图</string>
+                <string>重置网格地图</string>
                </property>
               </widget>
              </item>
@@ -252,7 +252,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="delete_all_toolButton">
+           <widget class="QToolButton" name="delete_toolButton">
             <property name="minimumSize">
              <size>
               <width>32</width>
@@ -274,21 +274,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QScrollArea" name="scrollArea">
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>194</width>
-            <height>533</height>
-           </rect>
-          </property>
-         </widget>
-        </widget>
+        <widget class="QListWidget" name="listWidget"/>
        </item>
        <item>
         <widget class="QToolButton" name="start_toolButton">
@@ -335,7 +321,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>26</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
