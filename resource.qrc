@@ -10,5 +10,6 @@
         <file>img/uav.png</file>
         <file>img/delete_uav.png</file>
         <file>img/edit_uav.png</file>
+        <file>img/editing_uav.png</file>
     </qresource>
 </RCC>

@@ -31,15 +31,17 @@ public:
 
 protected:
     void createGrid(int width, int height);
-    void switchDrawing();
+    void switchDrawingAction();
+    void generateMapFileAction();
 
 private slots:
     void on_generate_grid_bt_clicked();
     void on_start_toolButton_clicked();
-
     void on_add_toolButton_clicked();
-
     void on_delete_toolButton_clicked();
+    void set_uav_position(int id);
+    void setStatusText(QString text);
+    void updateUavPosition(int id, int x, int y);
 
 private:
     int uav_num;
@@ -47,7 +49,7 @@ private:
     Ui::MainWindow* ui;
     GridScene* grid_scene;
     QLabel* status_bar_label;
-    void setStatusText(const QString& text);
+
     void init();
     bool loadWorld(const QString& map_file_path);
 };

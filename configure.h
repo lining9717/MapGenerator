@@ -3,7 +3,7 @@
 
 #include<QString>
 
-const QString VERSION = "v0.1";
+const QString VERSION = "v1.1";
 
 const QString SIMULATION_LAUNCH_NAME = "Simulation Launcher";
 
@@ -13,8 +13,8 @@ enum WINDOWS_TYPES {
 };
 
 enum GRID_STATUS {
-    DRAWING = 0xffe1,
-    ERASING = 0xffe2,
+    EDIT_DRAWING = 0xffe1,
+    UAV_DRAWING = 0xffe2,
     IDLE = 0xffe3
 };
 

@@ -6,6 +6,8 @@
 #include <QWidget>
 #include <QDebug>
 
+const int NULL_POSITION = 0xfedc;
+
 namespace Ui {
 class UavItem;
 }
@@ -18,6 +20,14 @@ public:
     ~UavItem();
 
     void setItem(int position_x, int position_y);
+    void setPicDefault();
+    void setPicSelecting();
+    void setEditEnable(bool b);
+    int getX() const;
+    int getY() const;
+
+signals:
+    void send_uav_id(int id);
 
 private slots:
     void on_edit_toolButton_clicked();

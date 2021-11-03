@@ -36,7 +36,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::init()
 {
-    uav_num = 0;
+    uav_num = -1;
     ui->setupUi(this);
     this->setWindowTitle(SIMULATION_LAUNCH_NAME + " " + VERSION); //设置窗口标题
     this->setWindowIcon(QIcon(":/new/image/img/logo2.png")); //设置窗口logo
@@ -57,15 +57,16 @@ void MainWindow::init()
 
     //设置无人机listWidget
     ui->listWidget->setResizeMode(QListView::Adjust);
-    ui->listWidget->setViewMode(QListView::IconMode);
     ui->listWidget->setStyleSheet("QListWidget::item { border-bottom: 1px solid black; }");
     ui->listWidget->setMovement(QListView::Static); //禁止元素拖拽
+    ui->listWidget->setFocusPolicy(Qt::NoFocus);
 
     //信号槽绑定
-    connect(ui->edit_draw_action, &QAction::triggered, this, &MainWindow::switchDrawing);
+    connect(ui->edit_draw_action, &QAction::triggered, this, &MainWindow::switchDrawingAction);
+    connect(ui->generate_map_file_action, &QAction::triggered, this, &MainWindow::generateMapFileAction);
 }
 
-void MainWindow::setStatusText(const QString& text)
+void MainWindow::setStatusText(QString text)
 {
     status_bar_label->setText(text);
 }
@@ -92,11 +93,13 @@ bool MainWindow::loadWorld(const QString& map_file_path)
     ui->height_spinBox->setValue(map_height);
     ui->width_spinBox->setEnabled(false);
     ui->height_spinBox->setEnabled(false);
+    ui->generate_grid_bt->setEnabled(false);
     createGrid(map_width, map_height);
     for (int i = 1; i < map_height + 2; ++i) {
         for (int j = 1; j < map_width + 2; ++j) {
             if (grid[i][j] == '#') {
-                grid_scene->addRect((i - 1) * cell_size, (j - 1) * cell_size, cell_size, cell_size)
+                grid_scene->addWall(QPointF(j - 1, i - 1));
+                grid_scene->addRect((j - 1) * cell_size, (i - 1) * cell_size, cell_size, cell_size)
                     ->setBrush(QBrush(Qt::black));
             }
         }
@@ -110,70 +113,57 @@ void MainWindow::createGrid(int num_of_row, int num_of_col)
     int width = cell_size * num_of_row;
     int height = cell_size * num_of_col;
     GridScene* new_grid_scene = new GridScene(width, height);
-    grid_view->resize(width, height);
     grid_view->setScene(new_grid_scene);
     grid_view->setSceneRect(0, 0, width, height);
     grid_view->update();
-    //    grid_view->show();
     delete grid_scene;
     grid_scene = new_grid_scene;
     //初始化画板状态
     grid_scene->setGridStatus(IDLE);
-
-    // 无人机位置，暂时使用
-    int x_bias = num_of_row / 2;
-    int y_bias = num_of_col / 2;
-    QVector<QVector<int> > offset{ { 0, 0 }, { 1, 0 }, { 1, -1 }, { 0, -1 } };
-    for (auto& p : offset) {
-        grid_scene->addRect((x_bias + p[0]) * cell_size, (y_bias - p[1]) * cell_size,
-                      cell_size, cell_size)
-            ->setBrush(QBrush(Qt::blue));
-    }
+    connect(grid_scene, &GridScene::send_message, this, &MainWindow::setStatusText);
+    connect(grid_scene, &GridScene::send_position, this, &MainWindow::updateUavPosition);
 }
 
-void MainWindow::switchDrawing()
+void MainWindow::switchDrawingAction()
 {
-    if (grid_scene == nullptr) {
+    if (grid_scene == nullptr)
         return;
-    }
-    if (grid_scene->getGridStarus() != DRAWING) {
-        grid_scene->setGridStatus(DRAWING);
+    if (grid_scene->getGridStarus() == IDLE) {
+        grid_scene->setGridStatus(EDIT_DRAWING);
         ui->edit_draw_action->setText("停止绘制");
+        ui->uav_draw_action->setEnabled(false);
+        ui->generate_map_file_action->setEnabled(false);
+        ui->add_toolButton->setEnabled(false);
+        ui->width_spinBox->setEnabled(false);
+        ui->height_spinBox->setEnabled(false);
+        ui->delete_toolButton->setEnabled(false);
+        ui->generate_grid_bt->setEnabled(false);
         setStatusText("绘制地图中...");
-    } else {
+    } else if (grid_scene->getGridStarus() == EDIT_DRAWING) {
         grid_scene->setGridStatus(IDLE);
-        ui->edit_draw_action->setText("开始绘制");
+        ui->edit_draw_action->setText("绘制地图");
+        ui->uav_draw_action->setEnabled(true);
+        ui->generate_map_file_action->setEnabled(true);
+        ui->add_toolButton->setEnabled(true);
+        ui->delete_toolButton->setEnabled(true);
+        ui->generate_grid_bt->setEnabled(true);
+        ui->width_spinBox->setEnabled(true);
+        ui->height_spinBox->setEnabled(true);
         setStatusText("停止绘制");
     }
 }
 
-void MainWindow::on_generate_grid_bt_clicked()
+void MainWindow::generateMapFileAction()
 {
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::information(this, "生成新网格地图", "确定之后将会清除已绘制的地图",
-        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-    if (reply == QMessageBox::Yes) {
-        int width_num = ui->width_spinBox->value();
-        int height_num = ui->height_spinBox->value();
-        createGrid(width_num, height_num);
-    }
-}
+    if (grid_scene == nullptr)
+        return;
 
-void MainWindow::on_start_toolButton_clicked()
-{
     setStatusText("生成地图文件...");
-    //    QVector<QVector<QPointF>> walls = grid_scene->getWalls();
     QVector<QPointF> walls = grid_scene->getWalls();
     int height = grid_scene->getGridHeightNumber();
     int width = grid_scene->getGridWidthNumber();
     QVector<QString> map(height + 2, QString(width + 2, '.'));
-    //    for(int i=0; i<walls.size(); ++i)
-    //    {
-    //        for(int j=0; j<walls[i].size(); ++j)
-    //        {
-    //            map[int(walls[i][j].ry())+1][int(walls[i][j].rx())+1] = '#';
-    //        }
-    //    }
+
     for (int i = 0; i < walls.size(); ++i) {
         map[int(walls[i].ry()) + 1][int(walls[i].rx()) + 1] = '#';
     }
@@ -181,7 +171,7 @@ void MainWindow::on_start_toolButton_clicked()
     QString filename = QFileDialog::getSaveFileName(
         this,
         tr("选择保存目录文件"),
-        "/home/ln/map_world/map.txt",
+        "/home/ln/ros_ws/src/uavs_explore_indoor_environment/maps/",
         tr("text files(*.txt)"));
     QFile f(filename);
     if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -196,9 +186,46 @@ void MainWindow::on_start_toolButton_clicked()
     WorldFileGenerator mg;
     mg.setMapFile(filename.toStdString());
     QStringList list = filename.split('.');
-    list[0] += ".world";
-    mg.generateWorldFile(list[0].toStdString());
+    QStringList file_content_list = list[0].split('/');
+    QString map_file_name = file_content_list.back();
+    mg.generateWorldFile("/home/ln/ros_ws/src/uavs_explore_indoor_environment/worlds/" + map_file_name.toStdString() + ".world");
     setStatusText("生成world文件成功：" + list[0]);
+    QFile uavs_position_file("/home/ln/ros_ws/src/uavs_explore_indoor_environment/positions/" + map_file_name + ".txt");
+    if (uavs_position_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&uavs_position_file);
+        for (auto& uav : uav_items) {
+            out << uav->getX() << "," << uav->getY() << endl;
+        }
+    } else {
+        qWarning("打开文件失败");
+    }
+}
+
+void MainWindow::on_generate_grid_bt_clicked()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::information(this, "生成新网格地图", "确定之后将会清除已绘制的地图",
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+        int width_num = ui->width_spinBox->value();
+        int height_num = ui->height_spinBox->value();
+        createGrid(width_num, height_num);
+        while (uav_num >= 0) {
+            QListWidgetItem* item = ui->listWidget->item(uav_num);
+            ui->listWidget->removeItemWidget(item);
+            delete item;
+            item = nullptr;
+            grid_scene->removeUAV(uav_num);
+            UavItem* p = uav_items[uav_num];
+            uav_items.remove(uav_num);
+            delete p;
+            --uav_num;
+        }
+    }
+}
+
+void MainWindow::on_start_toolButton_clicked()
+{
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event)
@@ -216,17 +243,75 @@ void MainWindow::on_add_toolButton_clicked()
     pItem->setSizeHint(QSize(ui->listWidget->width(), 52));
     ui->listWidget->addItem(pItem);
     ui->listWidget->setItemWidget(pItem, p_uav_item);
+
     uav_items.push_back(p_uav_item);
+    connect(p_uav_item, &UavItem::send_uav_id, this, &MainWindow::set_uav_position);
 }
 
 void MainWindow::on_delete_toolButton_clicked()
 {
-    if (uav_num == 0)
+    if (uav_num == -1)
         return;
-    QListWidgetItem* item = ui->listWidget->item(uav_num - 1);
+    QListWidgetItem* item = ui->listWidget->item(uav_num);
     ui->listWidget->removeItemWidget(item);
     delete item;
     item = nullptr;
-    uav_items.remove(uav_num - 1);
+    grid_scene->removeUAV(uav_num);
+    UavItem* p = uav_items[uav_num];
+    uav_items.remove(uav_num);
     --uav_num;
+    delete p;
+}
+
+void MainWindow::updateUavPosition(int id, int x, int y)
+{
+    uav_items[id]->setItem(x, y);
+}
+
+void MainWindow::set_uav_position(int id)
+{
+    if (grid_scene == nullptr)
+        return;
+
+    if (grid_scene->getGridStarus() == IDLE) {
+        grid_scene->setUAVId(id);
+        grid_scene->setGridStatus(UAV_DRAWING);
+        ui->edit_draw_action->setEnabled(false);
+        ui->uav_draw_action->setEnabled(false);
+        ui->generate_map_file_action->setEnabled(false);
+        ui->add_toolButton->setEnabled(false);
+        ui->delete_toolButton->setEnabled(false);
+        ui->generate_grid_bt->setEnabled(false);
+        ui->width_spinBox->setEnabled(false);
+        ui->height_spinBox->setEnabled(false);
+        if (id <= uav_num) {
+            uav_items[id]->setPicSelecting();
+            for (int i = 0; i <= uav_num; ++i) {
+                if (i != id)
+                    uav_items[i]->setEditEnable(false);
+            }
+        }
+        setStatusText("选择无人机" + QString::number(id) + "位置");
+    } else if (grid_scene->getGridStarus() == UAV_DRAWING) {
+        if (grid_scene->getCurrUAVId() != id)
+            return;
+        grid_scene->setUAVId(-1);
+        grid_scene->setGridStatus(IDLE);
+        ui->edit_draw_action->setEnabled(true);
+        ui->uav_draw_action->setEnabled(true);
+        ui->generate_map_file_action->setEnabled(true);
+        ui->add_toolButton->setEnabled(true);
+        ui->delete_toolButton->setEnabled(true);
+        ui->generate_grid_bt->setEnabled(true);
+        ui->width_spinBox->setEnabled(true);
+        ui->height_spinBox->setEnabled(true);
+        if (id <= uav_num) {
+            uav_items[id]->setPicDefault();
+            for (int i = 0; i <= uav_num; ++i) {
+                if (i != id)
+                    uav_items[i]->setEditEnable(true);
+            }
+        }
+        setStatusText("选择无人机" + QString::number(id) + "位置成功");
+    }
 }

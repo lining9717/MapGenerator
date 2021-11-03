@@ -46,7 +46,7 @@ void SimulationLauncher::on_load_map_bt_clicked()
     QString fileName = QFileDialog::getOpenFileName(
                            this,
                            tr("打开地图文件"),
-                           "/home/ln/maps/",
+                           "/home/ln/ros_ws/src/uavs_explore_indoor_environment/maps/",
                            tr("text files(*.txt)"));
     if(fileName.isEmpty()) {
         return;

@@ -339,26 +339,10 @@
      <string>Edit</string>
     </property>
     <addaction name="edit_draw_action"/>
-    <addaction name="actions"/>
-    <addaction name="actionsa"/>
-    <addaction name="actionquan"/>
-   </widget>
-   <widget class="QMenu" name="menuAbout">
-    <property name="title">
-     <string>About</string>
-    </property>
-    <addaction name="actionabout"/>
-   </widget>
-   <widget class="QMenu" name="menuBuild">
-    <property name="title">
-     <string>Build</string>
-    </property>
-    <addaction name="actiona_3"/>
+    <addaction name="generate_map_file_action"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
-   <addaction name="menuBuild"/>
-   <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLoadworld">
@@ -391,14 +375,14 @@
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionsa">
+  <action name="generate_map_file_action">
    <property name="text">
-    <string>擦除</string>
+    <string>生产地图文件</string>
    </property>
   </action>
-  <action name="actions">
+  <action name="uav_draw_action">
    <property name="text">
-    <string>撤销</string>
+    <string>设置无人机位置</string>
    </property>
   </action>
   <action name="actiona">
