@@ -24,6 +24,7 @@ UavItem::UavItem(int uav_id, QWidget* parent)
     ui->edit_toolButton->setStyleSheet("border:none");
     ui->uav_id_label->setText("UAV" + QString::number(uav_id));
     m_id = uav_id;
+    state = Qt::Unchecked;
     setItem(NULL_POSITION, NULL_POSITION);
 }
 
@@ -35,6 +36,11 @@ UavItem::~UavItem()
 void UavItem::setEditEnable(bool b)
 {
     ui->edit_toolButton->setEnabled(b);
+}
+
+void UavItem::setStateEnable(bool b)
+{
+    ui->init_uav_checkBox->setEnabled(b);
 }
 
 void UavItem::setItem(int position_x, int position_y)
@@ -70,4 +76,15 @@ int UavItem::getX() const
 int UavItem::getY() const
 {
     return m_y;
+}
+
+int UavItem::getStatus() const
+{
+    return state;
+}
+
+void UavItem::on_init_uav_checkBox_stateChanged(int arg1)
+{
+    state = arg1;
+    emit send_uav_box(m_id, arg1);
 }

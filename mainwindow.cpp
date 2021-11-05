@@ -37,6 +37,8 @@ MainWindow::~MainWindow()
 void MainWindow::init()
 {
     uav_num = -1;
+    current_file_name = "";
+    init_uav_num = 0;
     ui->setupUi(this);
     this->setWindowTitle(SIMULATION_LAUNCH_NAME + " " + VERSION); //设置窗口标题
     this->setWindowIcon(QIcon(":/new/image/img/logo2.png")); //设置窗口logo
@@ -60,6 +62,8 @@ void MainWindow::init()
     ui->listWidget->setStyleSheet("QListWidget::item { border-bottom: 1px solid black; }");
     ui->listWidget->setMovement(QListView::Static); //禁止元素拖拽
     ui->listWidget->setFocusPolicy(Qt::NoFocus);
+
+    ui->start_explore_toolButton->setEnabled(false);
 
     //信号槽绑定
     connect(ui->edit_draw_action, &QAction::triggered, this, &MainWindow::switchDrawingAction);
@@ -133,6 +137,7 @@ void MainWindow::switchDrawingAction()
         ui->edit_draw_action->setText("停止绘制");
         ui->uav_draw_action->setEnabled(false);
         ui->generate_map_file_action->setEnabled(false);
+        ui->start_simulation_toolButton->setEnabled(false);
         ui->add_toolButton->setEnabled(false);
         ui->width_spinBox->setEnabled(false);
         ui->height_spinBox->setEnabled(false);
@@ -144,6 +149,7 @@ void MainWindow::switchDrawingAction()
         ui->edit_draw_action->setText("绘制地图");
         ui->uav_draw_action->setEnabled(true);
         ui->generate_map_file_action->setEnabled(true);
+        ui->start_simulation_toolButton->setEnabled(true);
         ui->add_toolButton->setEnabled(true);
         ui->delete_toolButton->setEnabled(true);
         ui->generate_grid_bt->setEnabled(true);
@@ -153,11 +159,27 @@ void MainWindow::switchDrawingAction()
     }
 }
 
-void MainWindow::generateMapFileAction()
+bool MainWindow::generateFiles()
 {
     if (grid_scene == nullptr)
-        return;
-
+        return "";
+    bool is_contain_init_uav = false;
+    for (auto& uav : uav_items) {
+        if (uav->getX() == NULL_POSITION or uav->getY() == NULL_POSITION) {
+            QMessageBox::information(this,
+                tr("错误"),
+                tr("请选择无人机初始位置!"));
+            return false;
+        }
+        if (uav->getStatus() == Qt::Checked)
+            is_contain_init_uav = true;
+    }
+    if (!is_contain_init_uav) {
+        QMessageBox::information(this,
+            tr("错误"),
+            tr("请选择初始无人机!"));
+        return false;
+    }
     setStatusText("生成地图文件...");
     QVector<QPointF> walls = grid_scene->getWalls();
     int height = grid_scene->getGridHeightNumber();
@@ -171,7 +193,7 @@ void MainWindow::generateMapFileAction()
     QString filename = QFileDialog::getSaveFileName(
         this,
         tr("选择保存目录文件"),
-        "/home/ln/ros_ws/src/uavs_explore_indoor_environment/maps/",
+        SAVE_CONTENT + "/maps/map.txt",
         tr("text files(*.txt)"));
     QFile f(filename);
     if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -188,17 +210,44 @@ void MainWindow::generateMapFileAction()
     QStringList list = filename.split('.');
     QStringList file_content_list = list[0].split('/');
     QString map_file_name = file_content_list.back();
-    mg.generateWorldFile("/home/ln/ros_ws/src/uavs_explore_indoor_environment/worlds/" + map_file_name.toStdString() + ".world");
+
+    mg.generateWorldFile(SAVE_CONTENT.toStdString() + "/worlds/" + map_file_name.toStdString() + ".world");
     setStatusText("生成world文件成功：" + list[0]);
-    QFile uavs_position_file("/home/ln/ros_ws/src/uavs_explore_indoor_environment/positions/" + map_file_name + ".txt");
-    if (uavs_position_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream out(&uavs_position_file);
-        for (auto& uav : uav_items) {
-            out << uav->getX() << "," << uav->getY() << endl;
-        }
+    QVector<QPair<int, int> > init_uavs_position, track_uavs_position;
+    for (auto& uav : uav_items) {
+        if (uav->getStatus() == Qt::Checked)
+            init_uavs_position.push_back({ uav->getX(), uav->getY() });
+        else if (uav->getStatus() == Qt::Unchecked)
+            track_uavs_position.push_back({ uav->getX(), uav->getY() });
+    }
+
+    QFile uavs_init_position_file(SAVE_CONTENT + "/positions/" + map_file_name + "_init.txt");
+    if (uavs_init_position_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&uavs_init_position_file);
+        for (auto& p : init_uavs_position)
+            out << p.first << "," << p.second << endl;
     } else {
         qWarning("打开文件失败");
     }
+
+    QFile uavs_track_position_file(SAVE_CONTENT + "/positions/" + map_file_name + "_track.txt");
+    if (uavs_track_position_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&uavs_track_position_file);
+        for (auto& p : track_uavs_position)
+            out << p.first << "," << p.second << endl;
+    } else {
+        qWarning("打开文件失败");
+    }
+
+    generateExploreLaunchFile(map_file_name, init_uavs_position, track_uavs_position);
+    generateStartUAVLaunchFile(map_file_name);
+    current_file_name = map_file_name;
+    return true;
+}
+
+void MainWindow::generateMapFileAction()
+{
+    generateFiles();
 }
 
 void MainWindow::on_generate_grid_bt_clicked()
@@ -224,10 +273,6 @@ void MainWindow::on_generate_grid_bt_clicked()
     }
 }
 
-void MainWindow::on_start_toolButton_clicked()
-{
-}
-
 void MainWindow::resizeEvent(QResizeEvent* event)
 {
     for (int i = 0; i < ui->listWidget->count(); i++) {
@@ -243,9 +288,10 @@ void MainWindow::on_add_toolButton_clicked()
     pItem->setSizeHint(QSize(ui->listWidget->width(), 52));
     ui->listWidget->addItem(pItem);
     ui->listWidget->setItemWidget(pItem, p_uav_item);
-
+    p_uav_item->setStateEnable(false);
     uav_items.push_back(p_uav_item);
     connect(p_uav_item, &UavItem::send_uav_id, this, &MainWindow::set_uav_position);
+    connect(p_uav_item, &UavItem::send_uav_box, this, &MainWindow::set_uav_state);
 }
 
 void MainWindow::on_delete_toolButton_clicked()
@@ -279,6 +325,7 @@ void MainWindow::set_uav_position(int id)
         ui->edit_draw_action->setEnabled(false);
         ui->uav_draw_action->setEnabled(false);
         ui->generate_map_file_action->setEnabled(false);
+        ui->start_simulation_toolButton->setEnabled(false);
         ui->add_toolButton->setEnabled(false);
         ui->delete_toolButton->setEnabled(false);
         ui->generate_grid_bt->setEnabled(false);
@@ -300,6 +347,7 @@ void MainWindow::set_uav_position(int id)
         ui->edit_draw_action->setEnabled(true);
         ui->uav_draw_action->setEnabled(true);
         ui->generate_map_file_action->setEnabled(true);
+        ui->start_simulation_toolButton->setEnabled(true);
         ui->add_toolButton->setEnabled(true);
         ui->delete_toolButton->setEnabled(true);
         ui->generate_grid_bt->setEnabled(true);
@@ -312,6 +360,68 @@ void MainWindow::set_uav_position(int id)
                     uav_items[i]->setEditEnable(true);
             }
         }
+        uav_items[id]->setStateEnable(true);
         setStatusText("选择无人机" + QString::number(id) + "位置成功");
     }
+}
+
+void MainWindow::set_uav_state(int id, int state)
+{
+    qDebug() << "select1 uav id:" << id << ", position(" << uav_items[id]->getX() << "," << uav_items[id]->getY() << ")";
+    if (state == Qt::Checked) {
+        ++init_uav_num;
+        grid_scene->setUavColor(id, Qt::red);
+        if (init_uav_num == 4) {
+            for (int i = 0; i <= uav_num; ++i) {
+                if (uav_items[i]->getStatus() == Qt::Unchecked)
+                    uav_items[i]->setStateEnable(false);
+            }
+        }
+    } else // 未选中 - Qt::Unchecked
+    {
+        grid_scene->setUavColor(id, Qt::blue);
+        if (init_uav_num == 4) {
+            for (int i = 0; i <= uav_num; ++i) {
+                if (uav_items[i]->getStatus() == Qt::Unchecked)
+                    uav_items[i]->setStateEnable(true);
+            }
+        }
+        --init_uav_num;
+    }
+}
+
+void MainWindow::on_start_simulation_toolButton_clicked()
+{
+    if (!generateFiles() or current_file_name == "")
+        return;
+    ui->edit_draw_action->setEnabled(false);
+    ui->uav_draw_action->setEnabled(false);
+    ui->generate_map_file_action->setEnabled(false);
+    ui->start_simulation_toolButton->setEnabled(false);
+    ui->add_toolButton->setEnabled(false);
+    ui->delete_toolButton->setEnabled(false);
+    ui->generate_grid_bt->setEnabled(false);
+    ui->width_spinBox->setEnabled(false);
+    ui->height_spinBox->setEnabled(false);
+    for (int i = 0; i <= uav_num; ++i) {
+        uav_items[i]->setEditEnable(false);
+        uav_items[i]->setStateEnable(false);
+    }
+    ui->start_simulation_toolButton->setEnabled(false);
+    ui->start_explore_toolButton->setEnabled(true);
+    QString command = simulation_command + " " + current_file_name + "_uav_explore.launch";
+    QString command2 = "gnome-terminal -x bash -c 'source ~/ros_ws/devel/setup.bash;" + command + "'&";
+    system(command2.toStdString().c_str());
+    setStatusText("启动仿真成功!");
+}
+
+void MainWindow::on_start_explore_toolButton_clicked()
+{
+    if (current_file_name == "")
+        return;
+    ui->start_explore_toolButton->setEnabled(false);
+    QString command = simulation_command + " " + current_file_name + "_start_uavs.launch";
+    QString command2 = "gnome-terminal -x bash -c 'source ~/ros_ws/devel/setup.bash;" + command + "'&";
+    system(command2.toStdString().c_str());
+    setStatusText("开始探索!");
 }

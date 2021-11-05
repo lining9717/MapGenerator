@@ -23,20 +23,26 @@ public:
     void setPicDefault();
     void setPicSelecting();
     void setEditEnable(bool b);
+    void setStateEnable(bool b);
     int getX() const;
     int getY() const;
+    int getStatus() const;
 
 signals:
     void send_uav_id(int id);
+    void send_uav_box(int id, int state);
 
 private slots:
     void on_edit_toolButton_clicked();
+
+    void on_init_uav_checkBox_stateChanged(int arg1);
 
 private:
     Ui::UavItem* ui;
     int m_id;
     int m_x;
     int m_y;
+    int state;
 };
 
 #endif // UAVITEM_H

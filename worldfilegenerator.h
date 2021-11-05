@@ -1,6 +1,7 @@
 #ifndef WORLDFILEGENERATOR_H
 #define WORLDFILEGENERATOR_H
 
+#include "launchfilegenerator.h"
 #include <string>
 #include <iostream>
 #include <fstream>

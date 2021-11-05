@@ -20,6 +20,8 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 set(SOURCES
     main.cpp
+    launchfilegenerator.h
+    launchfilegenerator.cpp
     mainwindow.cpp
     mainwindow.h
     configure.h
@@ -33,7 +35,8 @@ set(SOURCES
     simulationlauncher.cpp
     uavitem.ui
     uavitem.h
-    uavitem.cpp)
+    uavitem.cpp
+    )
 
 qt5_add_resources(SOURCES resource.qrc)
 

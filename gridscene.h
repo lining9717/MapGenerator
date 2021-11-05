@@ -33,6 +33,7 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
     void getWalls(const QPointF& start, const QPointF& end);
+    void setRectColor(const QPointF& coor, QBrush color);
 
 public:
     GridScene(int width, int height);
@@ -46,6 +47,7 @@ public:
     void removeUAV(int id);
     int getCurrUAVId() const;
     void addWall(QPointF position);
+    void setUavColor(int id, QBrush color);
 
 signals:
     void send_message(QString text);

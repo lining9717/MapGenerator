@@ -53,17 +53,27 @@ int GridScene::getCurrUAVId() const
 
 void GridScene::removeUAV(int id)
 {
-    qDebug() << "ID:" << id;
-    for (auto it = uav_positions_map.begin(); it != uav_positions_map.end(); ++it) {
-        qDebug() << it.key() << ":" << it.value();
-    }
     QPointF curr_uav_old_position = uav_positions_map[id];
     QGraphicsRectItem* curr_rect = qgraphicsitem_cast<QGraphicsRectItem*>(
-        itemAt({ curr_uav_old_position.x() * cell_size, curr_uav_old_position.y() * cell_size },
+        itemAt({ curr_uav_old_position.x() * cell_size + 1, curr_uav_old_position.y() * cell_size + 1 },
             QTransform()));
     removeItem(curr_rect);
     delete curr_rect;
     uav_positions_map.remove(id);
+}
+
+void GridScene::setRectColor(const QPointF& coor, QBrush color)
+{
+    QGraphicsRectItem* curr_rect = qgraphicsitem_cast<QGraphicsRectItem*>(
+        itemAt({ coor.x() * cell_size + 1, coor.y() * cell_size + 1 },
+            QTransform()));
+    curr_rect->setBrush(color);
+}
+
+void GridScene::setUavColor(int id, QBrush color)
+{
+    qDebug() << "select2 uav id:" << id << ", position(" << uav_positions_map[id].rx() << "," << uav_positions_map[id].ry() << ")";
+    setRectColor(uav_positions_map[id], color);
 }
 
 void GridScene::getWalls(const QPointF& start, const QPointF& end)

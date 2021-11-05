@@ -1,22 +1,5 @@
 #include "worldfilegenerator.h"
 
-std::string string_format(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    int count = vsnprintf(NULL, 0, format, args);
-    va_end(args);
-
-    va_start(args, format);
-    char* buff = (char*)malloc((count + 1) * sizeof(char));
-    vsnprintf(buff, (count + 1), format, args);
-    va_end(args);
-
-    std::string str(buff, count);
-    free(buff);
-    return str;
-}
-
 WorldFileGenerator::WorldFileGenerator() {}
 WorldFileGenerator::~WorldFileGenerator() {}
 void WorldFileGenerator::setMapFile(const string& map)
